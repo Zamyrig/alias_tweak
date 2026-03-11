@@ -40,7 +40,7 @@ $ mkalias
 ## Установка
 
 ```bash
-git clone https://github.com/your-username/mkalias.git
+git clone https://github.com/Zamyrig/alias_tweak.git
 cd mkalias
 sudo bash install.sh
 ```
@@ -48,7 +48,7 @@ sudo bash install.sh
 Или одной строкой:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-username/mkalias/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/Zamyrig/alias_tweak/main/install.sh | sudo bash
 ```
 
 ---

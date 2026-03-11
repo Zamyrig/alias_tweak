@@ -12,7 +12,7 @@ RESET='\033[0m'
 
 INSTALL_DIR="/usr/local/bin"
 SCRIPT_NAME="mkalias"
-REPO_URL="https://raw.githubusercontent.com/your-username/mkalias/main/mkalias"
+REPO_URL="https://raw.githubusercontent.com/Zamyrig/alias_tweak/main/mkalias"
 
 info()    { echo -e "${CYAN}::${RESET} $*"; }
 success() { echo -e "${GREEN}✔${RESET}  $*"; }
