@@ -1,101 +1,166 @@
-# alias.sh
+# mkalias
 
-Bash-скрипт, который устанавливает команду `mkalias` для удобного управления алиасами. Работает с **fish**, **bash** и **zsh**.
+**Fish-first alias manager for Linux/macOS.**  
+Manage aliases globally (all users) or per-user, with instant Fish shell support and optional Bash/Zsh integration.
+
+```
+  mkalias — alias list
+  ─────────────────────────────────────
+
+  [all users]
+  dc                = docker-compose
+  r                 = ranger
+  m                 = micro
+
+  [vladick]
+  da                = cd /projects/boars
+
+  [nikita]
+  alias list is empty
+```
 
 ---
 
-## Установка
+## Install
 
 ```bash
-git clone https://github.com/Zamyrig/my_tweaks
-cd my_tweaks
-chmod +x alias.sh
-sudo ./alias.sh
+git clone https://github.com/your-username/mkalias.git
+cd mkalias
+sudo bash install.sh
 ```
 
-После установки скрипт можно удалить — команда останется в системе.
-
-Чтобы активировать без перезапуска терминала:
+Or one-liner:
 
 ```bash
-source ~/.config/fish/config.fish   # fish
-source ~/.bashrc                     # bash
-source ~/.zshrc                      # zsh
+curl -fsSL https://raw.githubusercontent.com/your-username/mkalias/main/install.sh | sudo bash
+```
+
+> **Requires:** `bash` 4+, `fish` (optional but recommended), `curl` for one-liner install.
+
+---
+
+## Usage
+
+```
+mkalias                      show aliases (global + current user)
+mkalias name=value           add alias for current user
+mkalias -g name=value        add global alias for all users (requires sudo)
+mkalias -r name              remove alias
+mkalias -l                   list aliases (same as bare mkalias)
+mkalias -a                   list aliases for ALL users on the system
 ```
 
 ---
 
-## Использование
+## Commands
 
-```
-mkalias [флаги] [имя] [команда]
-```
-
-| Флаг | Полная форма | Описание |
-|------|-------------|----------|
-| `-a` | `--all` | Применить ко всем пользователям (требует root) |
-| `-g` | `--global` | Синоним `-a` |
-| `-r` | `--remove` | Удалить алиас |
-| `-l` | `--list` | Показать список алиасов |
-
-### Примеры
+### Add a user alias
 
 ```bash
-# Добавить алиас себе
-mkalias ll 'ls -la'
-mkalias dc 'docker compose'
-
-# Добавить алиас всем пользователям
-sudo mkalias -a cls 'clear'
-
-# Удалить алиас у себя
-mkalias -r ll
-
-# Удалить алиас у всех
-sudo mkalias -r -a cls
-
-# Показать свои алиасы (также работает просто: mkalias)
-mkalias -l
-
-# Показать глобальные алиасы и алиасы всех пользователей
-mkalias -l -a
+mkalias dc=docker-compose
+mkalias r=ranger
+mkalias da="cd /projects/boars"
 ```
 
----
+Alias is immediately available in Fish (as a function file in `~/.config/fish/functions/`).
 
-## Совместимость
-
-| Shell | Поддержка |
-|-------|-----------|
-| fish  | ✅ |
-| bash  | ✅ |
-| zsh   | ✅ |
-
-| ОС | Поддержка |
-|----|-----------|
-| Ubuntu / Debian | ✅ |
-| CentOS / RHEL / Fedora | ✅ |
-| Arch Linux | ✅ |
-| macOS | ⚠️ частично (нет `/etc/bash.bashrc`) |
-
----
-
-## Удаление
+### Add a global alias (all users)
 
 ```bash
-# fish
-sudo rm -f /etc/fish/functions/mkalias.fish
-sudo rm -f /etc/fish/conf.d/alias_tools.fish
-
-# bash/zsh
-sudo rm -f /etc/profile.d/alias_tools.sh
-sudo rm -f /etc/profile.d/custom_aliases.sh
+sudo mkalias -g m=micro
+sudo mkalias -g ll="ls -la"
 ```
 
-Личные алиасы пользователей остаются в их конфигах. Удалить их можно командой `mkalias -r <имя>` или вручную.
+Writes to `/etc/mkalias/aliases.conf` and `/etc/fish/functions/`.
+
+### Remove an alias
+
+```bash
+mkalias -r dc
+```
+
+Works for both user and global aliases (global removal requires `sudo`).
+
+### List aliases
+
+```bash
+mkalias        # or mkalias -l
+```
+
+```
+  [all users]
+  dc                = docker-compose
+  m                 = micro
+
+  [vladick]
+  da                = cd /projects/boars
+```
+
+### List aliases for all users
+
+```bash
+mkalias -a
+```
+
+Useful for admins to see what every user has configured.
 
 ---
 
-## Лицензия
+## Shell Support
+
+| Shell | Status | Notes |
+|-------|--------|-------|
+| **Fish** | ✅ Primary | Each alias = a `.fish` function file. No reload needed. |
+| **Bash** | ✅ Supported | `eval "$(mkalias --source-bash)"` added to `.bashrc` on install |
+| **Zsh** | ✅ Supported | Same eval line added to `.zshrc` on install |
+| Others | ➕ DIY | Run `mkalias --source-bash` to get `alias x=y` lines |
+
+### How Fish integration works
+
+Each alias is written as a native Fish function:
+
+```fish
+# ~/.config/fish/functions/dc.fish
+function dc
+    docker-compose $argv
+end
+```
+
+Fish auto-loads functions from `~/.config/fish/functions/` — no config change or shell restart needed.
+
+---
+
+## File Structure
+
+```
+/etc/mkalias/
+  aliases.conf           ← global aliases (name=value per line)
+
+/etc/fish/functions/
+  dc.fish                ← global fish function per alias
+  m.fish
+
+~/.config/mkalias/
+  aliases.conf           ← user aliases
+
+~/.config/fish/functions/
+  da.fish                ← user fish function per alias
+```
+
+---
+
+## Uninstall
+
+```bash
+sudo rm /usr/local/bin/mkalias
+sudo rm -rf /etc/mkalias
+sudo rm -rf /etc/fish/functions/*.fish   # careful — only if you want to wipe all
+rm -rf ~/.config/mkalias
+rm -f ~/.config/fish/functions/*.fish    # user functions
+```
+
+---
+
+## License
 
 MIT
