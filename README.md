@@ -41,14 +41,14 @@ $ mkalias
 
 ```bash
 git clone https://github.com/Zamyrig/alias_tweak.git
-cd alias_tweak
+cd alias_tweak/mkalias
 sudo bash install.sh
 ```
 
 Или одной строкой:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Zamyrig/alias_tweak/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/Zamyrig/alias_tweak/main/mkalias/install.sh | sudo bash
 ```
 
 ---
