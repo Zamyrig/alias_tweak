@@ -41,7 +41,7 @@ $ mkalias
 
 ```bash
 git clone https://github.com/Zamyrig/alias_tweak.git
-cd mkalias
+cd alias_tweak
 sudo bash install.sh
 ```
 
