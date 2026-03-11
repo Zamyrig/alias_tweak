@@ -1,6 +1,6 @@
 # alias.sh
 
-Bash-скрипт, который устанавливает в систему шесть команд для удобного управления алиасами. Работает с **fish**, **bash** и **zsh**.
+Bash-скрипт, который устанавливает команду `mkalias` для удобного управления алиасами. Работает с **fish**, **bash** и **zsh**.
 
 ---
 
@@ -13,47 +13,52 @@ chmod +x alias.sh
 sudo ./alias.sh
 ```
 
-После установки скрипт можно удалить — команды останутся в системе.
+После установки скрипт можно удалить — команда останется в системе.
 
-Чтобы активировать команды без перезапуска терминала:
+Чтобы активировать без перезапуска терминала:
 
 ```bash
-# fish
-source ~/.config/fish/config.fish
-
-# bash
-source ~/.bashrc
-
-# zsh
-source ~/.zshrc
+source ~/.config/fish/config.fish   # fish
+source ~/.bashrc                     # bash
+source ~/.zshrc                      # zsh
 ```
 
 ---
 
-## Команды
+## Использование
 
-| Команда | Описание | Права |
-|---------|----------|-------|
-| `addalias <имя> <команда>` | Добавить алиас себе | — |
-| `addaliasall <имя> <команда>` | Добавить алиас всем пользователям | root |
-| `removealias <имя>` | Удалить алиас у себя | — |
-| `removealiasall <имя>` | Удалить алиас у всех | root |
-| `listalias` | Показать свои алиасы | — |
-| `listaliasall` | Показать глобальные алиасы и алиасы всех пользователей | — |
+```
+mkalias [флаги] [имя] [команда]
+```
+
+| Флаг | Полная форма | Описание |
+|------|-------------|----------|
+| `-a` | `--all` | Применить ко всем пользователям (требует root) |
+| `-g` | `--global` | Синоним `-a` |
+| `-r` | `--remove` | Удалить алиас |
+| `-l` | `--list` | Показать список алиасов |
 
 ### Примеры
 
 ```bash
-addalias ll 'ls -la'
-addalias dc 'docker compose'
+# Добавить алиас себе
+mkalias ll 'ls -la'
+mkalias dc 'docker compose'
 
-sudo addaliasall cls 'clear'
+# Добавить алиас всем пользователям
+sudo mkalias -a cls 'clear'
 
-removealias ll
-sudo removealiasall cls
+# Удалить алиас у себя
+mkalias -r ll
 
-listalias
-listaliasall
+# Удалить алиас у всех
+sudo mkalias -r -a cls
+
+# Показать свои алиасы (также работает просто: mkalias)
+mkalias -l
+
+# Показать глобальные алиасы и алиасы всех пользователей
+mkalias -l -a
 ```
 
 ---
@@ -79,12 +84,7 @@ listaliasall
 
 ```bash
 # fish
-sudo rm -f /etc/fish/functions/addalias.fish
-sudo rm -f /etc/fish/functions/addaliasall.fish
-sudo rm -f /etc/fish/functions/removealias.fish
-sudo rm -f /etc/fish/functions/removealiasall.fish
-sudo rm -f /etc/fish/functions/listalias.fish
-sudo rm -f /etc/fish/functions/listaliasall.fish
+sudo rm -f /etc/fish/functions/mkalias.fish
 sudo rm -f /etc/fish/conf.d/alias_tools.fish
 
 # bash/zsh
@@ -92,7 +92,7 @@ sudo rm -f /etc/profile.d/alias_tools.sh
 sudo rm -f /etc/profile.d/custom_aliases.sh
 ```
 
-Алиасы, добавленные через `addalias`, останутся в личных конфигах пользователей. Удалить их можно командой `removealias` или вручную.
+Личные алиасы пользователей остаются в их конфигах. Удалить их можно командой `mkalias -r <имя>` или вручную.
 
 ---
 
