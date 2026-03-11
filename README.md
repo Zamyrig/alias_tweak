@@ -1,14 +1,14 @@
 # alias.sh
 
-Bash-скрипт, который устанавливает в систему две команды — `addalias` и `addaliasall` — для удобного управления алиасами без ручного редактирования конфиг-файлов.
+Bash-скрипт, который устанавливает в систему шесть команд для удобного управления алиасами. Работает с **fish**, **bash** и **zsh** — каждый пользователь получает команды в своём родном shell.
 
 ---
 
 ## Быстрый старт
 
 ```bash
-git clone https://github.com/Zamyrig/my_tweaks.git
-cd my_tweaks
+git clone https://github.com/your-username/alias.sh
+cd alias.sh
 chmod +x alias.sh
 sudo ./alias.sh
 ```
@@ -17,50 +17,140 @@ sudo ./alias.sh
 
 ---
 
-## Что устанавливается
+## Команды
 
-### `addalias` — алиас для себя
+### `addalias` — добавить алиас себе
 
-Добавляет алиас в rc-файл текущего пользователя (`~/.bashrc`, `~/.zshrc` или `~/.profile` в зависимости от shell).
-
-```bash
+```
 addalias <имя> <команда>
 ```
 
-**Примеры:**
-```bash
-addalias ll 'ls -la'
-addalias gs 'git status'
-addalias py 'python3'
+Добавляет алиас в конфиг текущего пользователя и активирует его в текущей сессии.
+
+```fish
+# fish
+addalias ll  'ls -la'
+addalias gs  'git status'
+addalias k   'kubectl'
 addalias ..  'cd ..'
 ```
-
-После добавления применить без перезапуска терминала:
 ```bash
-source ~/.bashrc   # или ~/.zshrc
+# bash / zsh
+addalias ll  'ls -la'
+addalias py  'python3'
+```
+
+Применить без перезапуска терминала:
+```fish
+source ~/.config/fish/config.fish   # fish
+source ~/.bashrc                     # bash
+source ~/.zshrc                      # zsh
 ```
 
 ---
 
-### `addaliasall` — алиас для всех пользователей
+### `addaliasall` — добавить алиас всем пользователям
 
-Добавляет алиас глобально: в `/etc/profile.d/custom_aliases.sh` и в rc-файл каждого существующего пользователя, включая root.
-
-> Требует прав root.
-
-```bash
+```
 sudo addaliasall <имя> <команда>
 ```
 
-**Примеры:**
+Записывает алиас глобально и в конфиг каждого пользователя системы (fish, bash, zsh), включая root.
+
 ```bash
-sudo addaliasall k   'kubectl'
-sudo addaliasall dc  'docker compose'
-sudo addaliasall ll  'ls -la --color=auto'
-sudo addaliasall cls 'clear'
+sudo addaliasall dc   'docker compose'
+sudo addaliasall ll   'ls -la --color=auto'
+sudo addaliasall cls  'clear'
 ```
 
-Алиас будет доступен всем пользователям при следующем открытии терминала.
+---
+
+### `removealias` — удалить алиас у себя
+
+```
+removealias <имя>
+```
+
+Удаляет алиас из конфига и деактивирует его в текущей сессии.
+
+```bash
+removealias ll
+removealias gs
+```
+
+---
+
+### `removealiasall` — удалить алиас у всех
+
+```
+sudo removealiasall <имя>
+```
+
+Удаляет алиас из глобального конфига и из конфига каждого пользователя.
+
+```bash
+sudo removealiasall dc
+```
+
+---
+
+### `listalias` — посмотреть свои алиасы
+
+```
+listalias
+```
+
+Показывает алиасы текущего пользователя из его конфиг-файла и активные алиасы сессии.
+
+**Fish:**
+```
+=== Fish: ~/.config/fish/config.fish ===
+  alias ll 'ls -la'
+  alias gs 'git status'
+
+=== Fish: ~/.config/fish/functions/ ===
+  ll → /home/user/.config/fish/functions/ll.fish
+  gs → /home/user/.config/fish/functions/gs.fish
+```
+
+**Bash/Zsh:**
+```
+=== Aliases in /home/user/.bashrc ===
+  alias ll='ls -la'
+
+=== Active aliases in current session ===
+  alias ll='ls -la'
+  alias ls='ls --color=auto'
+```
+
+---
+
+### `listaliasall` — посмотреть глобальные алиасы
+
+```
+listaliasall
+```
+
+Показывает глобальные алиасы и алиасы каждого пользователя системы.
+
+```
+=== Fish global (/etc/fish/functions/) ===
+  dc  → /etc/fish/functions/dc.fish
+  cls → /etc/fish/functions/cls.fish
+
+=== Fish: per-user config.fish ===
+  [alice]
+    alias ll 'ls -la'
+  [root]
+    alias k 'kubectl'
+
+=== Global aliases (/etc/profile.d/custom_aliases.sh) ===
+  alias dc='docker compose'
+
+=== Per-user aliases ===
+  [bob] /home/bob/.bashrc
+    alias ll='ls -la'
+```
 
 ---
 
@@ -69,17 +159,30 @@ sudo addaliasall cls 'clear'
 ```
 sudo ./alias.sh
       │
-      ├── записывает функции в /etc/profile.d/addalias.sh
-      │         (загружается автоматически при каждом входе)
+      ├── [fish]
+      │     ├── 6 .fish файлов → /etc/fish/functions/
+      │     ├── /etc/fish/conf.d/alias_tools.fish
+      │     │         (прописывает /etc/fish/functions в fish_function_path)
+      │     └── добавляет fish_function_path в config.fish каждого fish-пользователя
       │
-      ├── прописывает sourcing в /etc/bash.bashrc
-      │         (на случай если дистрибутив не делает это сам)
-      │
-      └── добавляет строку sourcing в ~/.bashrc / ~/.zshrc
-                каждого существующего пользователя
+      └── [bash/zsh]
+            ├── /etc/profile.d/alias_tools.sh
+            │         (содержит все 6 функций для bash/zsh)
+            ├── /etc/profile.d/custom_aliases.sh
+            │         (сюда записываются глобальные алиасы через addaliasall)
+            └── добавляет sourcing в ~/.bashrc / ~/.zshrc каждого пользователя
 ```
 
-При повторном вызове `addalias` или `addaliasall` с тем же именем — старый алиас перезаписывается, дублей не возникает.
+При повторном добавлении того же алиаса — старый перезаписывается, дублей нет.
+
+---
+
+## Требования
+
+- Bash 4.0+ (для запуска установщика)
+- Fish, bash или zsh — в зависимости от пользователей в системе
+- Права root для установки и для команд `*all`
+- Стандартные утилиты: `grep`, `sed`, `mktemp`
 
 ---
 
@@ -87,24 +190,16 @@ sudo ./alias.sh
 
 | Shell | Поддержка |
 |-------|-----------|
+| fish  | ✅ |
 | bash  | ✅ |
 | zsh   | ✅ |
-| sh / другие | ✅ (через `~/.profile`) |
 
 | ОС | Поддержка |
 |----|-----------|
 | Ubuntu / Debian | ✅ |
 | CentOS / RHEL / Fedora | ✅ |
 | Arch Linux | ✅ |
-| macOS (bash/zsh) | ⚠️ частично (нет `/etc/bash.bashrc`) |
-
----
-
-## Требования
-
-- Bash 4.0+
-- Права root для установки (`sudo`) и для `addaliasall`
-- Стандартные утилиты: `sed`, `grep`, `cat` — присутствуют в любом Linux
+| macOS | ⚠️ частично (нет `/etc/bash.bashrc`) |
 
 ---
 
@@ -112,24 +207,35 @@ sudo ./alias.sh
 
 | Файл | Что делает |
 |------|------------|
-| `/etc/profile.d/addalias.sh` | Хранит функции `addalias` и `addaliasall` |
-| `/etc/profile.d/custom_aliases.sh` | Хранит глобальные алиасы (создаётся `addaliasall`) |
+| `/etc/fish/functions/*.fish` | Функции команд и глобальные fish-алиасы |
+| `/etc/fish/conf.d/alias_tools.fish` | Добавляет `/etc/fish/functions` в `fish_function_path` |
+| `/etc/profile.d/alias_tools.sh` | Bash/zsh функции всех 6 команд |
+| `/etc/profile.d/custom_aliases.sh` | Глобальные bash/zsh алиасы (через `addaliasall`) |
 | `/etc/bash.bashrc` | Добавляет sourcing `/etc/profile.d/` если его нет |
-| `~/.bashrc` / `~/.zshrc` / `~/.profile` | Добавляет одну строку sourcing для каждого пользователя |
+| `~/.config/fish/config.fish` | Алиасы и fish_function_path для fish-пользователя |
+| `~/.config/fish/functions/*.fish` | Файлы функций конкретного fish-пользователя |
+| `~/.bashrc` / `~/.zshrc` | Sourcing + алиасы bash/zsh пользователя |
 
 ---
 
 ## Удаление
 
 ```bash
-# Удалить функции и глобальные алиасы
-sudo rm -f /etc/profile.d/addalias.sh
-sudo rm -f /etc/profile.d/custom_aliases.sh
+# Удалить команды (fish)
+sudo rm -f /etc/fish/functions/addalias.fish
+sudo rm -f /etc/fish/functions/addaliasall.fish
+sudo rm -f /etc/fish/functions/removealias.fish
+sudo rm -f /etc/fish/functions/removealiasall.fish
+sudo rm -f /etc/fish/functions/listalias.fish
+sudo rm -f /etc/fish/functions/listaliasall.fish
+sudo rm -f /etc/fish/conf.d/alias_tools.fish
 
-# Убрать строку sourcing из своего rc-файла (опционально)
-# Найти и удалить строку:
-# [ -f /etc/profile.d/addalias.sh ] && . /etc/profile.d/addalias.sh
+# Удалить команды (bash/zsh) и глобальные алиасы
+sudo rm -f /etc/profile.d/alias_tools.sh
+sudo rm -f /etc/profile.d/custom_aliases.sh
 ```
+
+Алиасы, добавленные через `addalias`, останутся в личных конфигах пользователей. Их можно удалить командой `removealias` до удаления скрипта или вручную.
 
 ---
 
